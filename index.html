@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataDrone LMS — Learning Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --red: #ff1f1f; --red-dark: #cc1919; --white: #ffffff;
+  --gray-300: #aaaaaa; --gray-500: #666666; --gray-700: #333333;
+  --gray-800: #1a1a1a; --gray-900: #111111; --black: #000000;
+}
+html { scroll-behavior: smooth; }
+body { font-family: 'Poppins', sans-serif; background: var(--black); color: var(--white); min-height: 100vh; overflow-x: hidden; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--black); }
+::-webkit-scrollbar-thumb { background: var(--red); border-radius: 3px; }
+
+/* ══════ LOGIN ══════ */
+.login-screen { position: fixed; inset: 0; z-index: 9999; background: var(--black); display: flex; align-items: center; justify-content: center; padding: 2rem; transition: opacity 0.5s ease, visibility 0.5s ease; }
+.login-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.login-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 30% 40%, rgba(255,31,31,0.06) 0%, transparent 60%), radial-gradient(ellipse at 70% 60%, rgba(255,31,31,0.04) 0%, transparent 60%); }
+.login-grid-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,31,31,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,31,31,0.02) 1px, transparent 1px); background-size: 60px 60px; }
+.login-card { position: relative; background: var(--gray-900); border: 1px solid rgba(255,255,255,0.06); border-radius: 24px; padding: 3rem 2.5rem; max-width: 420px; width: 100%; animation: fadeUp 0.6s ease; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.login-logo { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; justify-content: center; }
+.login-logo-icon { width: 48px; height: 48px; background: var(--red); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; }
+.login-logo-text { font-size: 1.4rem; font-weight: 700; }
+.login-logo-text span { color: var(--red); }
+.login-subtitle { text-align: center; color: var(--gray-500); font-size: 0.85rem; font-weight: 300; margin-bottom: 2.5rem; }
+.login-field { margin-bottom: 1.25rem; }
+.login-field label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--gray-300); margin-bottom: 0.5rem; }
+.login-field input { width: 100%; padding: 0.85rem 1rem; background: var(--black); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; color: var(--white); font-family: 'Poppins', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.3s; }
+.login-field input::placeholder { color: var(--gray-700); }
+.login-field input:focus { border-color: var(--red); }
+.login-error { font-size: 0.8rem; color: var(--red); margin-bottom: 1rem; min-height: 1.2rem; text-align: center; }
+.login-btn { width: 100%; padding: 0.9rem; background: var(--red); color: var(--white); border: none; border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+.login-btn:hover { background: var(--red-dark); box-shadow: 0 8px 30px rgba(255,31,31,0.3); }
+
+/* ══════ NAVBAR ══════ */
+.navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(0,0,0,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,31,31,0.15); padding: 0 2rem; height: 70px; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s; }
+.navbar.scrolled { box-shadow: 0 4px 30px rgba(255,31,31,0.1); }
+.nav-logo { display: flex; align-items: center; gap: 0.75rem; cursor: pointer; text-decoration: none; }
+.nav-logo-icon { width: 40px; height: 40px; background: var(--red); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; }
+.nav-logo-text { font-size: 1.2rem; font-weight: 700; }
+.nav-logo-text span { color: var(--red); }
+.nav-center { display: flex; align-items: center; gap: 0.25rem; list-style: none; }
+.nav-center a { color: var(--gray-300); text-decoration: none; font-size: 0.85rem; font-weight: 500; padding: 0.5rem 1rem; border-radius: 8px; transition: all 0.3s; }
+.nav-center a:hover, .nav-center a.active { color: var(--white); background: rgba(255,31,31,0.1); }
+.nav-center a.active { color: var(--red); }
+.nav-right { display: flex; align-items: center; gap: 1rem; }
+.nav-user { display: flex; align-items: center; gap: 0.6rem; }
+.nav-user-avatar { width: 32px; height: 32px; background: rgba(255,31,31,0.15); border: 1px solid rgba(255,31,31,0.3); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--red); }
+.nav-user-email { font-size: 0.75rem; color: var(--gray-500); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-logout { background: none; border: 1px solid rgba(255,255,255,0.08); color: var(--gray-500); font-family: 'Poppins', sans-serif; font-size: 0.75rem; font-weight: 500; padding: 0.35rem 0.85rem; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
+.nav-logout:hover { border-color: var(--red); color: var(--red); }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 5px; z-index: 1001; }
+.hamburger span { width: 24px; height: 2px; background: var(--white); transition: all 0.3s; border-radius: 2px; }
+.hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+@media (max-width: 768px) {
+  .hamburger { display: flex; }
+  .nav-user-email { display: none; }
+  .nav-center { position: fixed; top: 0; right: -100%; width: 280px; height: 100vh; background: rgba(0,0,0,0.97); flex-direction: column; padding: 100px 2rem 2rem; gap: 0.5rem; transition: right 0.3s; border-left: 1px solid rgba(255,31,31,0.2); }
+  .nav-center.open { right: 0; }
+  .nav-center a { font-size: 1rem; padding: 0.75rem 1rem; width: 100%; }
+  .mobile-user-info { display: flex; flex-direction: column; gap: 0.5rem; padding-top: 1rem; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); }
+  .mobile-email { font-size: 0.8rem; color: var(--gray-500); word-break: break-all; }
+  .nav-right .nav-logout { display: none; }
+}
+@media (min-width: 769px) { .mobile-user-info { display: none !important; } }
+
+/* ══════ MAIN ══════ */
+main { padding-top: 70px; }
+.page { display: none; min-height: calc(100vh - 70px); }
+.page.active { display: block; }
+
+/* ══════ HERO ══════ */
+.hero { position: relative; min-height: calc(100vh - 70px); display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem; overflow: hidden; }
+.hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 20% 50%, rgba(255,31,31,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 50%, rgba(255,31,31,0.05) 0%, transparent 60%); }
+.hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,31,31,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,31,31,0.03) 1px, transparent 1px); background-size: 60px 60px; }
+.hero-content { position: relative; max-width: 800px; animation: fadeUp 0.8s ease; }
+.hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(255,31,31,0.1); border: 1px solid rgba(255,31,31,0.25); padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.8rem; font-weight: 500; color: var(--red); margin-bottom: 1.5rem; letter-spacing: 0.5px; }
+.hero-badge::before { content: ''; width: 6px; height: 6px; background: var(--red); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.hero h1 { font-size: clamp(2.2rem, 5vw, 3.8rem); font-weight: 800; line-height: 1.15; margin-bottom: 1.25rem; }
+.hero h1 span { color: var(--red); }
+.hero p { font-size: clamp(0.95rem, 2vw, 1.15rem); color: var(--gray-300); line-height: 1.7; margin-bottom: 2.5rem; max-width: 600px; margin-left: auto; margin-right: auto; font-weight: 300; }
+.hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.85rem 2rem; border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 0.9rem; font-weight: 600; text-decoration: none; cursor: pointer; border: none; transition: all 0.3s; }
+.btn-primary { background: var(--red); color: var(--white); }
+.btn-primary:hover { background: var(--red-dark); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,31,31,0.3); }
+.btn-outline { background: transparent; color: var(--white); border: 1px solid var(--gray-700); }
+.btn-outline:hover { border-color: var(--red); color: var(--red); transform: translateY(-2px); }
+
+/* ══════ STATS ══════ */
+.stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: rgba(255,31,31,0.1); border-top: 1px solid rgba(255,31,31,0.1); border-bottom: 1px solid rgba(255,31,31,0.1); }
+.stat-item { background: var(--black); padding: 2rem 1.5rem; text-align: center; }
+.stat-number { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 800; color: var(--red); margin-bottom: 0.25rem; }
+.stat-label { font-size: 0.75rem; color: var(--gray-500); font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+@media (max-width: 600px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } }
+
+/* ══════ SECTIONS ══════ */
+.section { padding: 5rem 2rem; }
+.section-header { text-align: center; margin-bottom: 3rem; }
+.section-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--red); margin-bottom: 0.75rem; }
+.section-title { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 700; margin-bottom: 0.75rem; }
+.section-desc { color: var(--gray-500); font-size: 0.95rem; max-width: 550px; margin: 0 auto; font-weight: 300; }
+.quick-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; max-width: 1200px; margin: 0 auto; }
+.quick-card { background: var(--gray-900); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; }
+.quick-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--red); transform: scaleX(0); transition: transform 0.3s; }
+.quick-card:hover::before { transform: scaleX(1); }
+.quick-card:hover { border-color: rgba(255,31,31,0.2); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+.quick-card-icon { width: 48px; height: 48px; background: rgba(255,31,31,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; }
+.quick-card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.5rem; }
+.quick-card p { font-size: 0.85rem; color: var(--gray-500); line-height: 1.6; font-weight: 300; }
+
+/* ══════ COURSES ══════ */
+.courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+@media (max-width: 400px) { .courses-grid { grid-template-columns: 1fr; } }
+.course-card { background: var(--gray-900); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; overflow: hidden; cursor: pointer; transition: all 0.3s; }
+.course-card:hover { border-color: rgba(255,31,31,0.3); transform: translateY(-4px); box-shadow: 0 16px 50px rgba(0,0,0,0.5); }
+.course-card-header { background: linear-gradient(135deg, rgba(255,31,31,0.15), rgba(255,31,31,0.05)); padding: 1.5rem; }
+.course-id { font-size: 0.7rem; font-weight: 600; color: var(--red); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 0.5rem; }
+.course-card-header h3 { font-size: 1.1rem; font-weight: 700; }
+.course-card-body { padding: 1.5rem; }
+.course-meta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; }
+.course-meta-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--gray-500); }
+.course-meta-icon { width: 16px; height: 16px; fill: var(--red); flex-shrink: 0; }
+.course-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; }
+.course-tag { font-size: 0.7rem; padding: 0.25rem 0.75rem; background: rgba(255,31,31,0.08); border: 1px solid rgba(255,31,31,0.15); border-radius: 50px; color: var(--gray-300); font-weight: 500; }
+.course-start-btn { width: 100%; padding: 0.75rem; background: rgba(255,31,31,0.1); border: 1px solid rgba(255,31,31,0.2); border-radius: 10px; color: var(--red); font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+.course-start-btn:hover { background: var(--red); color: var(--white); }
+
+/* ══════ COURSE DETAIL ══════ */
+.course-detail { max-width: 900px; margin: 0 auto; padding: 2rem; }
+.course-back { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--gray-500); font-size: 0.85rem; font-weight: 500; cursor: pointer; margin-bottom: 2rem; transition: color 0.3s; background: none; border: none; font-family: 'Poppins', sans-serif; }
+.course-back:hover { color: var(--red); }
+.course-detail-header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.course-detail-id { font-size: 0.75rem; font-weight: 600; color: var(--red); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 0.75rem; }
+.course-detail-header h1 { font-size: clamp(1.5rem, 3vw, 2.2rem); font-weight: 800; margin-bottom: 1rem; }
+.course-detail-meta { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+.course-detail-meta-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: var(--gray-500); }
+.progress-bar-wrapper { margin-bottom: 2.5rem; background: var(--gray-900); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 1.5rem; }
+.progress-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+.progress-label-text { font-size: 0.85rem; font-weight: 500; color: var(--gray-300); }
+.progress-label-count { font-size: 0.8rem; font-weight: 600; color: var(--red); }
+.progress-track { width: 100%; height: 8px; background: var(--gray-800); border-radius: 4px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--red); border-radius: 4px; transition: width 0.5s; width: 0%; }
+.course-section { margin-bottom: 1rem; background: var(--gray-900); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; overflow: hidden; transition: border-color 0.3s; }
+.course-section.read { border-color: rgba(255,31,31,0.15); }
+.course-section-header { display: flex; align-items: center; gap: 1rem; padding: 1.5rem; cursor: pointer; transition: background 0.3s; }
+.course-section-header:hover { background: rgba(255,31,31,0.03); }
+.section-number { width: 36px; height: 36px; background: rgba(255,31,31,0.1); border: 1px solid rgba(255,31,31,0.2); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: var(--red); flex-shrink: 0; transition: all 0.3s; }
+.course-section.read .section-number { background: var(--red); color: var(--white); }
+.course-section-header h3 { font-size: 1rem; font-weight: 600; flex: 1; }
+.section-read-badge { font-size: 0.65rem; font-weight: 600; color: var(--red); background: rgba(255,31,31,0.1); padding: 0.2rem 0.6rem; border-radius: 50px; display: none; }
+.course-section.read .section-read-badge { display: block; }
+.section-toggle { color: var(--gray-500); font-size: 1.2rem; transition: transform 0.3s; flex-shrink: 0; }
+.course-section.open .section-toggle { transform: rotate(180deg); }
+.course-section-content { max-height: 0; overflow: hidden; transition: max-height 0.5s; }
+.course-section.open .course-section-content { max-height: 8000px; }
+.section-body { padding: 0 1.5rem 1.5rem; font-size: 0.9rem; line-height: 1.8; color: var(--gray-300); font-weight: 300; }
+.section-body h4 { color: var(--white); font-weight: 600; font-size: 0.95rem; margin: 1.25rem 0 0.5rem; }
+.section-body h4:first-child { margin-top: 0; }
+.section-body ul, .section-body ol { margin: 0.5rem 0 0.5rem 1.5rem; }
+.section-body li { margin-bottom: 0.35rem; }
+.section-body .tip-box { background: rgba(255,31,31,0.05); border-left: 3px solid var(--red); padding: 1rem 1.25rem; border-radius: 0 10px 10px 0; margin: 1rem 0; font-size: 0.85rem; }
+.section-body .tip-box strong { color: var(--red); }
+.quiz-section { border-radius: 16px; padding: 2rem; text-align: center; margin-top: 2rem; transition: all 0.5s; }
+.quiz-section.locked { background: var(--gray-900); border: 1px solid rgba(255,255,255,0.05); }
+.quiz-section.unlocked { background: linear-gradient(135deg, rgba(255,31,31,0.12), rgba(255,31,31,0.04)); border: 1px solid rgba(255,31,31,0.25); }
+.quiz-lock-icon { width: 48px; height: 48px; margin: 0 auto 1rem; background: rgba(255,255,255,0.03); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+.quiz-section.unlocked .quiz-lock-icon { display: none; }
+.quiz-section h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+.quiz-section .quiz-desc { color: var(--gray-500); font-size: 0.85rem; margin-bottom: 1.5rem; font-weight: 300; }
+.quiz-link { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.85rem 2.5rem; border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 0.9rem; font-weight: 600; text-decoration: none; transition: all 0.3s; border: none; cursor: pointer; }
+.quiz-link.disabled { background: var(--gray-800); color: var(--gray-500); cursor: not-allowed; pointer-events: none; }
+.quiz-link.enabled { background: var(--red); color: var(--white); }
+.quiz-link.enabled:hover { background: var(--red-dark); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,31,31,0.3); }
+.quiz-remaining { font-size: 0.8rem; color: var(--gray-500); margin-top: 0.75rem; }
+
+/* ══════ DOCUMENTS ══════ */
+.docs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+@media (max-width: 400px) { .docs-grid { grid-template-columns: 1fr; } }
+.doc-card { background: var(--gray-900); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; overflow: hidden; transition: all 0.3s; }
+.doc-card:hover { border-color: rgba(255,31,31,0.3); transform: translateY(-4px); box-shadow: 0 16px 50px rgba(0,0,0,0.5); }
+.doc-preview { height: 180px; background: var(--gray-800); position: relative; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.doc-preview iframe { width: 100%; height: 100%; border: none; pointer-events: none; }
+.doc-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--gray-700); gap: 0.5rem; }
+.doc-placeholder svg { opacity: 0.5; }
+.doc-placeholder span { font-size: 0.75rem; }
+.doc-preview-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.7) 100%); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 1rem; cursor: pointer; }
+.doc-preview-btn { font-size: 0.75rem; font-weight: 600; color: var(--white); background: rgba(255,31,31,0.8); padding: 0.4rem 1.2rem; border-radius: 8px; opacity: 0; transform: translateY(8px); transition: all 0.3s; }
+.doc-card:hover .doc-preview-btn { opacity: 1; transform: translateY(0); }
+.doc-info { padding: 1.25rem; }
+.doc-icon-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+.doc-icon { width: 36px; height: 36px; background: rgba(255,31,31,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.doc-info h3 { font-size: 0.95rem; font-weight: 600; flex: 1; }
+.doc-info p { font-size: 0.8rem; color: var(--gray-500); font-weight: 300; line-height: 1.5; }
+.doc-open-link { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--red); font-size: 0.8rem; font-weight: 600; text-decoration: none; margin-top: 0.75rem; transition: gap 0.3s; }
+.doc-open-link:hover { gap: 0.7rem; }
+
+/* ══════ FOOTER ══════ */
+.footer { border-top: 1px solid rgba(255,31,31,0.1); padding: 3rem 2rem; text-align: center; }
+.footer p { font-size: 0.8rem; color: var(--gray-500); font-weight: 300; }
+.footer p span { color: var(--red); font-weight: 500; }
+.fade-in { opacity: 0; transform: translateY(20px); transition: all 0.6s; }
+.fade-in.visible { opacity: 1; transform: translateY(0); }
+@media (max-width: 768px) {
+  .navbar { padding: 0 1.25rem; height: 60px; }
+  main { padding-top: 60px; }
+  .section { padding: 3rem 1.25rem; }
+  .course-detail { padding: 1.25rem; }
+  .courses-grid, .docs-grid { padding: 0 1.25rem; }
+  .hero { padding: 2rem 1.25rem; }
+  .hero-actions { flex-direction: column; align-items: center; }
+  .btn { width: 100%; justify-content: center; max-width: 280px; }
+  .course-detail-meta { gap: 0.75rem; }
+  .section-body { padding: 0 1.25rem 1.25rem; }
+  .login-card { padding: 2rem 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-bg"></div>
+  <div class="login-grid-bg"></div>
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">DD</div>
+      <div class="login-logo-text">Data<span>Drone</span> LMS</div>
+    </div>
+    <p class="login-subtitle">Sign in with your work email to access training</p>
+    <div class="login-field">
+      <label for="loginEmail">Email Address</label>
+      <input type="email" id="loginEmail" placeholder="you@datadrone.com" autocomplete="email" onkeydown="if(event.key==='Enter')handleLogin()">
+    </div>
+    <div class="login-error" id="loginError"></div>
+    <button class="login-btn" onclick="handleLogin()">Sign In</button>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <a class="nav-logo" onclick="navigate('home')">
+    <div class="nav-logo-icon">DD</div>
+    <div class="nav-logo-text">Data<span>Drone</span> LMS</div>
+  </a>
+  <ul class="nav-center" id="navLinks">
+    <li><a href="#" class="active" data-page="home" onclick="navigate('home')">Home</a></li>
+    <li><a href="#" data-page="courses" onclick="navigate('courses')">Courses</a></li>
+    <li><a href="#" data-page="documents" onclick="navigate('documents')">Policies</a></li>
+    <div class="mobile-user-info">
+      <div class="mobile-email" id="mobileEmail"></div>
+      <button class="nav-logout" onclick="handleLogout()">Sign Out</button>
+    </div>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-user">
+      <div class="nav-user-avatar" id="navAvatar"></div>
+      <div class="nav-user-email" id="navEmail"></div>
+    </div>
+    <button class="nav-logout" onclick="handleLogout()">Sign Out</button>
+  </div>
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
+</nav>
+
+<main>
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-grid"></div>
+      <div class="hero-content">
+        <div class="hero-badge">DataDrone Learning Platform</div>
+        <h1>Security Starts With <span>Awareness</span></h1>
+        <p>Welcome to DataDrone's Learning Management System. Complete your assigned training modules, stay up to date with company policies, and keep our team and client data secure.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" onclick="navigate('courses')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Start Training</a>
+          <a class="btn btn-outline" onclick="navigate('documents')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> View Policies</a>
+        </div>
+      </div>
+    </section>
+    <div class="stats-bar">
+      <div class="stat-item"><div class="stat-number" id="statCourses">0</div><div class="stat-label">Your Courses</div></div>
+      <div class="stat-item"><div class="stat-number">10</div><div class="stat-label">Policies</div></div>
+      <div class="stat-item"><div class="stat-number">80%</div><div class="stat-label">Pass Mark</div></div>
+      <div class="stat-item"><div class="stat-number">24/7</div><div class="stat-label">Access</div></div>
+    </div>
+    <section class="section">
+      <div class="section-header">
+        <div class="section-label">Quick Access</div>
+        <h2 class="section-title">Your Learning Hub</h2>
+        <p class="section-desc">Everything you need to stay compliant, secure, and informed.</p>
+      </div>
+      <div class="quick-grid">
+        <div class="quick-card fade-in" onclick="navigate('courses')"><div class="quick-card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff1f1f" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div><h3>Training Courses</h3><p>Your assigned security training modules. Complete all sections before taking the quiz.</p></div>
+        <div class="quick-card fade-in" onclick="navigate('documents')"><div class="quick-card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff1f1f" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><h3>Company Policies</h3><p>Access all DataDrone policies and reference documents in one centralized location.</p></div>
+        <div class="quick-card fade-in" onclick="navigate('courses')"><div class="quick-card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff1f1f" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><h3>Assessments</h3><p>Complete quizzes at the end of each module. Read all sections first to unlock the quiz.</p></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- COURSES LIST -->
+  <div class="page" id="page-courses">
+    <section class="section">
+      <div class="section-header">
+        <div class="section-label">Training Modules</div>
+        <h2 class="section-title">Your Assigned Courses</h2>
+        <p class="section-desc">Complete all sections within each course to unlock the assessment quiz.</p>
+      </div>
+      <div class="courses-grid" id="coursesGrid"></div>
+    </section>
+  </div>
+
+  <!-- COURSE DETAIL -->
+  <div class="page" id="page-course-detail">
+    <section class="section"><div class="course-detail" id="courseDetail"></div></section>
+  </div>
+
+  <!-- DOCUMENTS -->
+  <div class="page" id="page-documents">
+    <section class="section">
+      <div class="section-header">
+        <div class="section-label">Reference Documents</div>
+        <h2 class="section-title">Company Policies</h2>
+        <p class="section-desc">Review DataDrone's policies and guidelines. Click on any document to open the full version.</p>
+      </div>
+      <div class="docs-grid" id="docsGrid"></div>
+    </section>
+  </div>
+</main>
+
+<footer class="footer"><p>&copy; 2025 <span>DataDrone</span>. All rights reserved. Internal use only.</p></footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// CONFIGURATION — Email-to-Course Access Mapping
+// ═══════════════════════════════════════════════════════════
+//
+// Add each user's email and the course indices they can access.
+// Indices: 0=TRN-001, 1=TRN-002, 2=TRN-003, ... 9=TRN-010
+// Use "ALL" to give full access to every course.
+//
+const USER_ACCESS = {
+  "aroon.cumar@datadrone.biz":      "ALL",
+  "pmc@datadrone.biz":         "ALL",                    
+  "developer@datadrone.com":  [0,1,2,3,4,5,6,9],         
+  "accounts@datadrone.com":   [0,1,2,3,4,7,8,9],         
+  "outreach@datadrone.com":   [0,1,2,3,4,7,9],           
+  "product@datadrone.com":    [0,1,2,3,4,6,9],           
+};
+
+const courses=[{id:"TRN-001",title:"General Security Awareness",audience:"All Staff",frequency:"Onboarding + Every 6 Months",duration:"~15 mins",assessment:"Quiz — 80% Pass Mark",quizLink:"#",tags:["Required","All Staff","Recurring"],sections:[{title:"Why Security Matters at DataDrone",content:`<h4>Our Responsibility as a Remote Team</h4><p>At DataDrone, we work with sensitive client data and customer data platforms every day. As a fully remote organisation, each one of us is individually responsible for maintaining strong security practices — there's no office firewall doing the work for us.</p><p>Security isn't about being paranoid or making your life harder. It's about building good habits that protect our clients, our team, and our reputation.</p><h4>What's at Stake</h4><ul><li><strong>Client Trust:</strong> Our clients trust us with their customer data. A breach could damage relationships that took years to build.</li><li><strong>Legal Obligations:</strong> We're bound by data protection regulations and client contracts.</li><li><strong>Our Reputation:</strong> In the CDP consulting space, reputation is everything.</li><li><strong>Your Personal Data:</strong> A compromised account doesn't just affect the company.</li></ul><div class="tip-box"><strong>Remember:</strong> Security is a team effort. Every good decision you make contributes to keeping DataDrone safe.</div>`},{title:"Common Threats You Should Know About",content:`<h4>Social Engineering</h4><p>This is when someone tries to manipulate you into giving up information or access. It might be someone pretending to be a colleague on Slack, a fake email from "IT support," or even a phone call claiming to be from a vendor. Always verify unexpected requests through a separate channel.</p><h4>Phishing</h4><p>Phishing emails are designed to look legitimate but trick you into clicking malicious links or entering your credentials on fake websites. If something feels off, it probably is.</p><h4>Malware & Ransomware</h4><p>Malicious software can infect your system through dodgy downloads, email attachments, or compromised websites. Keep your OS and apps updated, and never install software from untrusted sources.</p><h4>Unsecured Networks</h4><p>Working from a café or co-working space? Public Wi-Fi is convenient but risky. Always use a VPN when connecting to any network you don't fully trust.</p><div class="tip-box"><strong>Quick Rule:</strong> If you're ever unsure whether something is a legitimate request or a security threat, just ask.</div>`},{title:"Everyday Security Best Practices",content:`<h4>Lock Your Screen</h4><p>Every time you step away — even for a moment — lock your screen. On Mac: <strong>Cmd + Ctrl + Q</strong>. On Windows: <strong>Win + L</strong>.</p><h4>Keep Software Updated</h4><p>Software updates patch security vulnerabilities. Enable automatic updates whenever possible.</p><h4>Use Strong, Unique Passwords</h4><p>Every account should have its own unique password. Use a password manager to generate and store them.</p><h4>Be Careful With Shared Links and Files</h4><p>Before opening a shared document or clicking a link, make sure it's expected. Verify with the sender directly.</p><h4>Secure Your Physical Space</h4><p>Even at home, be mindful of who might see your screen. If on a video call discussing client data, ensure you're in a private space.</p><div class="tip-box"><strong>Habit Tip:</strong> Set a daily reminder to check that your OS, browser, and key apps are up to date.</div>`},{title:"What To Do When Something Goes Wrong",content:`<h4>Don't Panic — Report It</h4><p>Mistakes happen. What matters is how quickly we respond. If you think you've clicked a suspicious link, accidentally shared sensitive information, or noticed anything unusual — report it straight away.</p><h4>How to Report</h4><ul><li>Notify your team lead and the security team immediately.</li><li>Don't try to "fix" things yourself.</li><li>Write down what happened while it's fresh.</li></ul><h4>After Reporting</h4><p>The security team will assess and guide you on next steps. No one will be in trouble for making an honest mistake and reporting it promptly.</p><div class="tip-box"><strong>Golden Rule:</strong> When in doubt, report it. Speed matters more than certainty.</div>`}]},{id:"TRN-002",title:"Password & Credential Security",audience:"All Staff",frequency:"Onboarding + Annually",duration:"~10 mins",assessment:"Quiz — 80% Pass Mark",quizLink:"#",tags:["Required","All Staff"],sections:[{title:"Why Passwords Still Matter",content:`<h4>Your First Line of Defence</h4><p>Passwords are still the most common way we protect our accounts. A weak or reused password remains one of the easiest ways for attackers to gain access.</p><h4>How Passwords Get Compromised</h4><ul><li><strong>Data Breaches:</strong> If you reuse passwords, all those accounts become vulnerable when one service is breached.</li><li><strong>Brute Force:</strong> Short, simple passwords can be cracked in minutes.</li><li><strong>Credential Stuffing:</strong> Attackers try breached credentials on other services.</li><li><strong>Shoulder Surfing:</strong> Someone watching you type your password in public.</li></ul><div class="tip-box"><strong>Quick Check:</strong> Visit haveibeenpwned.com to see if your email has appeared in known breaches.</div>`},{title:"Creating and Managing Strong Passwords",content:`<h4>What Makes a Strong Password</h4><ul><li><strong>At least 12 characters</strong> — longer is better.</li><li><strong>Mix of characters</strong> — uppercase, lowercase, numbers, symbols.</li><li><strong>No personal information</strong> — avoid names, birthdays, pet names.</li><li><strong>No common patterns</strong> — "Password123!" is not strong.</li></ul><h4>Use a Password Manager</h4><p>A password manager generates strong, random passwords and stores them securely. You only need one master password.</p><h4>Never Share Credentials</h4><p>Don't share passwords via Slack, email, or any messaging platform. Use a password manager's secure sharing feature.</p><div class="tip-box"><strong>Pro Tip:</strong> Use passphrases — 4-5 random words like "correct-horse-battery-staple". Long, strong, and memorable.</div>`},{title:"Multi-Factor Authentication (MFA)",content:`<h4>What is MFA?</h4><p>MFA adds an extra step beyond your password. Even if someone steals your password, they can't get in without the second factor.</p><h4>Types of MFA</h4><ul><li><strong>Authenticator Apps</strong> (recommended): Google Authenticator, Authy — time-based codes every 30 seconds.</li><li><strong>SMS Codes:</strong> Better than nothing, but less secure than apps.</li><li><strong>Hardware Keys:</strong> Physical keys like YubiKey — most secure option.</li></ul><h4>Where to Enable MFA</h4><p>All work accounts — email, Slack, project tools, cloud platforms. If it supports MFA, enable it today.</p><div class="tip-box"><strong>Important:</strong> Always save your MFA backup/recovery codes somewhere secure.</div>`}]},{id:"TRN-003",title:"Phishing Awareness",audience:"All Staff",frequency:"Onboarding + Every 6 Months",duration:"~10 mins",assessment:"Simulation + Quiz",quizLink:"#",tags:["Required","All Staff","Recurring"],sections:[{title:"Understanding Phishing Attacks",content:`<h4>What is Phishing?</h4><p>Phishing tricks you into clicking malicious links, downloading infected files, or entering credentials on fake websites. Modern phishing can look almost identical to legitimate communications.</p><h4>Why Phishing Works</h4><ul><li><strong>Urgency:</strong> "Your account will be suspended in 24 hours!"</li><li><strong>Authority:</strong> "This is the CEO, I need you to do this right now."</li><li><strong>Familiarity:</strong> Emails that look exactly like Google, Slack, or your bank.</li><li><strong>Curiosity:</strong> "Someone shared a document with you."</li></ul><div class="tip-box"><strong>Key Insight:</strong> Phishing targets human psychology, not technology.</div>`},{title:"How to Spot a Phishing Attempt",content:`<h4>Red Flags to Watch For</h4><ul><li><strong>Check the sender's email carefully.</strong> The display name might say "Google" but the email is support@g00gle-security.com.</li><li><strong>Hover over links before clicking.</strong> If the URL doesn't match expectations, don't click.</li><li><strong>Watch for generic greetings.</strong> "Dear User" instead of your name.</li><li><strong>Be suspicious of unexpected attachments.</strong></li><li><strong>Look for urgency or threats.</strong></li><li><strong>Check for poor grammar.</strong></li></ul><div class="tip-box"><strong>Remember:</strong> DataDrone will never ask for your password via email or Slack.</div>`},{title:"Real-World Scenarios and What To Do",content:`<h4>Scenario 1: The Urgent CEO Email</h4><p>"Hey, I need you to purchase gift cards ASAP and send me the codes." <strong>Action:</strong> Verify through Slack or phone. This is a classic BEC scam.</p><h4>Scenario 2: The Shared Document</h4><p>"John shared a Google Doc with you" — but you weren't expecting it. <strong>Action:</strong> Check the sender email. Go directly to Google Drive, don't use the link. Message John to confirm.</p><h4>Scenario 3: The Password Reset</h4><p>"Your password needs resetting due to a security update." <strong>Action:</strong> Never use unexpected reset links. Go directly to the service's website.</p><div class="tip-box"><strong>Team Rule:</strong> It's completely okay to take a few minutes to verify something suspicious.</div>`}]},{id:"TRN-004",title:"Data Classification & Handling",audience:"All Staff",frequency:"Onboarding + Annually",duration:"~15 mins",assessment:"Quiz — 80% Pass Mark",quizLink:"#",tags:["Required","All Staff"],sections:[{title:"Understanding Data Classification",content:`<h4>DataDrone's Classification Levels</h4><ul><li><strong>Public:</strong> Marketing content, published docs. No special handling.</li><li><strong>Internal:</strong> Team notes, internal processes. Keep within company systems.</li><li><strong>Confidential:</strong> Client details, contracts, financial data. Approved systems with access controls.</li><li><strong>Restricted:</strong> Client credentials, PII, API keys. Strict access, encryption, logging.</li></ul><div class="tip-box"><strong>Simple Test:</strong> "What would happen if this was publicly exposed?" The worse the answer, the higher the classification.</div>`},{title:"How to Handle Data Properly",content:`<h4>Storage</h4><p>Always use approved platforms. Never save client data to personal devices or cloud storage.</p><h4>Sharing</h4><ul><li><strong>Public:</strong> Share freely.</li><li><strong>Internal:</strong> Approved tools only.</li><li><strong>Confidential:</strong> Authorised team members, secure channels.</li><li><strong>Restricted:</strong> Encrypted channels with explicit authorisation only.</li></ul><h4>Deletion</h4><p>Follow proper deletion from all locations: cloud, local, shared drives, backups.</p><div class="tip-box"><strong>Watch Out:</strong> Screenshots and exported reports contain classified data too.</div>`},{title:"Working Remotely With Sensitive Data",content:`<h4>Your Remote Workspace</h4><ul><li><strong>Screen Privacy:</strong> Use a privacy screen in public spaces.</li><li><strong>Network Security:</strong> Always use VPN on untrusted networks.</li><li><strong>Video Calls:</strong> Private space, careful screen sharing.</li></ul><h4>Device Security</h4><p>Enable full-disk encryption. Keep work files in approved cloud storage. Securely wipe devices before disposal.</p><div class="tip-box"><strong>Quick Check:</strong> Is your hard drive encrypted? Mac: FileVault. Windows: Device Encryption. Enable it today.</div>`},{title:"Real Examples of Data Handling Mistakes",content:`<h4>Common Mistakes</h4><ul><li>Emailing client PII to the wrong person — double-check recipients.</li><li>Pasting API keys in Slack — use password manager sharing.</li><li>Saving client dashboard screenshots to desktop — use approved storage.</li><li>Google Docs set to "Anyone with link" — restrict access.</li></ul><div class="tip-box"><strong>No Blame Culture:</strong> Report mistakes immediately. Quick reporting = quick resolution.</div>`}]},{id:"TRN-005",title:"Incident Reporting",audience:"All Staff",frequency:"Onboarding + Annually",duration:"~10 mins",assessment:"Scenario Quiz",quizLink:"#",tags:["Required","All Staff"],sections:[{title:"What Counts as a Security Incident",content:`<h4>Examples</h4><ul><li>Clicking a phishing link or suspicious attachment</li><li>Accidentally sharing confidential data with wrong person</li><li>Unauthorised access alerts on your accounts</li><li>Colleague's account sending unusual messages</li><li>Sensitive data in unsecured locations</li><li>Suspected malware infection</li></ul><h4>Near-Misses Matter Too</h4><p>If you received a phishing email but didn't click it, report it — it could be a targeted campaign.</p><div class="tip-box"><strong>Rule of Thumb:</strong> If something seems "weird" or "not right," report it.</div>`},{title:"How to Report an Incident",content:`<h4>Step-by-Step</h4><ol><li><strong>Stop and contain:</strong> Change passwords, disconnect from suspicious sessions.</li><li><strong>Notify security team:</strong> Use the designated channel.</li><li><strong>Inform team lead.</strong></li><li><strong>Document details</strong> while fresh.</li><li><strong>Preserve evidence:</strong> Don't delete suspicious items.</li></ol><h4>Include</h4><ul><li>Date and time</li><li>What happened</li><li>Affected accounts/systems/data</li><li>Actions already taken</li><li>Screenshots if safe</li></ul><div class="tip-box"><strong>Speed Over Perfection:</strong> A quick "something happened" beats a delayed detailed report.</div>`},{title:"After You Report: What Happens Next",content:`<h4>Response Process</h4><ol><li><strong>Acknowledgement</strong> and follow-up questions.</li><li><strong>Assessment</strong> of severity and scope.</li><li><strong>Containment</strong> — passwords, access, isolation.</li><li><strong>Resolution</strong> and restoration.</li><li><strong>Follow-up</strong> with outcome and next steps.</li></ol><h4>No-Blame Policy</h4><p>Report promptly and in good faith — that's all we ask. The only concern is knowingly hiding incidents.</p><div class="tip-box"><strong>Key Takeaway:</strong> You are DataDrone's first line of defence. Every report helps us improve.</div>`}]},{id:"TRN-006",title:"Secure Development Practices",audience:"Development Team",frequency:"Onboarding + Annually",duration:"~15 mins",assessment:"Quiz — 80% Pass Mark",quizLink:"#",tags:["Development","Technical"],sections:[{title:"Security in the Development Lifecycle",content:`<h4>Shifting Left on Security</h4><p>Address security early — a vulnerability in code review costs minutes; in production, days and client data.</p><h4>Core Principles</h4><ul><li><strong>Least Privilege:</strong> Minimum permissions needed.</li><li><strong>Defence in Depth:</strong> Layer multiple protections.</li><li><strong>Fail Securely:</strong> Error messages shouldn't reveal internals.</li><li><strong>Input Validation:</strong> Never trust user input.</li></ul><div class="tip-box"><strong>Developer Mindset:</strong> "What could go wrong if an attacker controlled this input?"</div>`},{title:"Secure Coding Standards",content:`<h4>Secrets Management</h4><p>Never hardcode API keys or credentials. Use environment variables or secrets management.</p><ul><li>Never commit secrets to version control.</li><li>Use .gitignore for sensitive config files.</li><li>Rotate accidentally committed secrets immediately.</li><li>Separate credentials per environment.</li></ul><h4>Dependencies</h4><p>Keep updated, audit for vulnerabilities, be cautious with unknown packages.</p><h4>Code Review</h4><p>Review all code for hardcoded secrets, missing validation, improper error handling, insecure storage.</p><div class="tip-box"><strong>Quick Win:</strong> Set up pre-commit hooks to scan for secrets.</div>`},{title:"API and Integration Security",content:`<h4>Securing APIs</h4><ul><li><strong>Auth:</strong> Verify identity and permissions. Use OAuth 2.0.</li><li><strong>Rate Limiting:</strong> Prevent abuse.</li><li><strong>Data Minimisation:</strong> Return only needed data.</li><li><strong>Logging:</strong> Log access, never log sensitive data plaintext.</li></ul><h4>Client Systems</h4><p>Follow client security docs. Use secure connections. Never take shortcuts.</p><div class="tip-box"><strong>Reminder:</strong> Unsure about security implications? Ask. A quick conversation prevents big issues.</div>`},{title:"Deployment and Environment Security",content:`<h4>Secure Deployment</h4><ul><li><strong>Environment Separation:</strong> Dev/staging/production strictly separated.</li><li><strong>Access Control:</strong> RBAC and audit logging for production.</li><li><strong>Monitoring:</strong> Alert on unusual patterns and error spikes.</li></ul><h4>Infrastructure as Code</h4><p>Same security practices: code review, version control, access management.</p><div class="tip-box"><strong>Deploy Checklist:</strong> Secrets managed? Access controls set? Logging enabled? Code reviewed? All yes = go.</div>`}]},{id:"TRN-007",title:"CDP & Data Privacy",audience:"Product + Development",frequency:"Onboarding + Annually",duration:"~15 mins",assessment:"Quiz — 80% Pass Mark",quizLink:"#",tags:["Product","Development"],sections:[{title:"Customer Data Platforms and Privacy",content:`<h4>What We Work With</h4><p>Customer profiles, behavioural data, purchase history, PII. Enormous responsibility.</p><h4>Key Privacy Principles</h4><ul><li><strong>Purpose Limitation:</strong> Only use data for specified, legitimate purposes.</li><li><strong>Data Minimisation:</strong> Only collect what's needed.</li><li><strong>Storage Limitation:</strong> Don't keep data longer than necessary.</li><li><strong>Transparency:</strong> Users should know what's collected and why.</li></ul><div class="tip-box"><strong>Our Role:</strong> We advise clients on privacy-first approaches. It's ethical and good business.</div>`},{title:"Regulatory Landscape",content:`<h4>Key Regulations</h4><ul><li><strong>GDPR:</strong> Lawful basis, data subject rights, 72-hour breach notification.</li><li><strong>CCPA/CPRA:</strong> Right to know, delete, opt out of sales.</li><li><strong>Regional Laws:</strong> Always check which regulations apply.</li></ul><h4>For Our Work</h4><ul><li>Consent management properly integrated.</li><li>Data subject rights fulfillable across destinations.</li><li>Data flows documented.</li></ul><div class="tip-box"><strong>Note:</strong> You don't need to be a legal expert. When in doubt, escalate.</div>`},{title:"Privacy-First CDP Implementation",content:`<h4>Consent and Tracking</h4><ul><li>CMP integrated before any tracking.</li><li>Collection respects consent choices.</li><li>Consent records stored and auditable.</li></ul><h4>Data Flow Mapping</h4><p>Document origins, transformations, destinations, and access for every implementation.</p><h4>Access Controls</h4><p>Role-based access. Restrict PII to those who genuinely need it.</p><div class="tip-box"><strong>Best Practice:</strong> "Does this data flow respect the consent given?" If not clear, don't activate.</div>`}]},{id:"TRN-008",title:"Client Data Handling",audience:"Outreach + Accounts",frequency:"Onboarding + Annually",duration:"~10 mins",assessment:"Quiz — 80% Pass Mark",quizLink:"#",tags:["Outreach","Accounts"],sections:[{title:"Understanding Your Responsibility",content:`<h4>Types of Client Data You Handle</h4><ul><li><strong>Contact Information:</strong> Names, emails, phones. Confidential.</li><li><strong>Business Information:</strong> Project details, budgets. Commercially sensitive.</li><li><strong>Credentials:</strong> Store securely — never in email/Slack/notes.</li><li><strong>Financial Data:</strong> Invoices, payments. Always confidential.</li></ul><div class="tip-box"><strong>Key Principle:</strong> Treat every piece of client information as if losing it would end the relationship.</div>`},{title:"Safe Communication Practices",content:`<h4>Email Security</h4><ul><li><strong>Double-check recipients</strong> — autocomplete can betray you.</li><li><strong>Use secure sharing links</strong> instead of attachments.</li><li><strong>Be careful with CC/BCC</strong> — only include who's needed.</li><li><strong>Don't discuss restricted data over email.</strong></li></ul><h4>Calls and Meetings</h4><p>Use headphones in shared spaces. Store notes in approved locations.</p><div class="tip-box"><strong>Email Tip:</strong> Before send — Right recipient? Right attachment? Nothing sensitive below?</div>`},{title:"CRM and Data Management",content:`<h4>Keep Data Organised and Secure</h4><ul><li><strong>Approved Tools Only:</strong> No personal spreadsheets with client details.</li><li><strong>Access Controls:</strong> Restrict shared docs to those who need access.</li><li><strong>Regular Cleanup:</strong> Archive/delete data from ended projects.</li><li><strong>Data Accuracy:</strong> Keep records current.</li></ul><p>If a client shares more than necessary, store securely and suggest better methods.</p><div class="tip-box"><strong>Remember:</strong> How you handle client data shapes trust in our entire organisation.</div>`}]},{id:"TRN-009",title:"Financial Data Security",audience:"Accounts Team",frequency:"Onboarding + Annually",duration:"~10 mins",assessment:"Quiz — 80% Pass Mark",quizLink:"#",tags:["Accounts","Finance"],sections:[{title:"The Sensitivity of Financial Data",content:`<h4>Types You Handle</h4><ul><li><strong>Banking Details:</strong> Account numbers, routing info. Always Restricted.</li><li><strong>Invoices/Payments:</strong> Confidential minimum.</li><li><strong>Payroll:</strong> Restricted and legally protected.</li><li><strong>Financial Reports:</strong> Confidential business information.</li></ul><div class="tip-box"><strong>Threat Awareness:</strong> BEC targeting financial staff is one of the costliest cyberattacks.</div>`},{title:"Protecting Against Financial Fraud",content:`<h4>BEC Protection</h4><ul><li><strong>Verify payment changes verbally</strong> using numbers already on file.</li><li><strong>Watch for urgency.</strong> "This needs to go out TODAY" is a red flag.</li><li><strong>Check email addresses carefully.</strong></li><li><strong>Follow approval workflows.</strong> Never bypass them.</li></ul><div class="tip-box"><strong>Critical Rule:</strong> Any payment detail change must be verified through a separate, trusted channel.</div>`},{title:"Secure Financial Data Handling",content:`<h4>Storage & Access</h4><ul><li>Approved, encrypted systems only.</li><li>Strong passwords + MFA on all financial systems.</li><li>Regular access reviews.</li></ul><h4>Sharing</h4><ul><li>Never share banking details via email or Slack.</li><li>Use secure document sharing for invoices.</li><li>Confirm receipt verbally.</li></ul><h4>Record Keeping</h4><p>Clear records of all transactions for audit trails.</p><div class="tip-box"><strong>Daily Practice:</strong> Before processing: Expected? Approved? Details match? If anything is off, stop and verify.</div>`}]},{id:"TRN-010",title:"Weekly Security Awareness",audience:"All Staff",frequency:"Every Week",duration:"~5 mins",assessment:"Completion Logged",quizLink:"#",tags:["Required","All Staff","Weekly"],sections:[{title:"This Week's Security Focus",content:`<h4>Staying Sharp</h4><p>Security awareness is most effective when ongoing. These weekly sessions keep best practices top of mind.</p><h4>How This Works</h4><ul><li>New topic each week — about 5 minutes.</li><li>Completion is automatically logged. No quiz.</li><li>Questions? Reach out to the security team.</li></ul><div class="tip-box"><strong>This Week's Tip:</strong> Check if all work accounts have MFA enabled. That one action dramatically reduces your risk.</div>`},{title:"Common Scenarios to Consider",content:`<h4>Unexpected File Share</h4><p>Colleague shared a doc you weren't expecting. <strong>Action:</strong> Message them to confirm before opening.</p><h4>Working from a New Location</h4><p>Free café Wi-Fi + client data. <strong>Action:</strong> VPN first. Screen privacy. Headphones. Mobile hotspot if Wi-Fi is suspicious.</p><h4>Client Sends Password via Email</h4><p><strong>Action:</strong> Store in password manager immediately. Suggest secure sharing methods.</p><div class="tip-box"><strong>Reflection:</strong> Think about your past week. Any security decisions? Right calls?</div>`},{title:"Security Quick Reference",content:`<h4>Cheat Sheet</h4><ul><li><strong>Passwords:</strong> Unique. Password manager. MFA everywhere.</li><li><strong>Phishing:</strong> Verify. Check emails. Hover before click. Report.</li><li><strong>Data:</strong> Classify. Store properly. Share securely. Delete when done.</li><li><strong>Incidents:</strong> Report immediately. No blame. Speed matters.</li><li><strong>Remote Work:</strong> VPN. Screen privacy. Lock screen. Encrypted drives.</li></ul><h4>Key Contacts</h4><ul><li>Security: designated reporting channel</li><li>IT Support: IT team</li><li>Team Lead: for work-related concerns</li></ul><div class="tip-box"><strong>Final Thought:</strong> Stay aware, follow good practices, report anything off. That's it. Thank you.</div>`}]}];
+
+const documents=[
+  {id:"DOC-001",title:"Information Security Policy",desc:"Core security policy covering all aspects of DataDrone's information security management.",iframeSrc:"",link:"#"},
+  {id:"DOC-002",title:"Acceptable Use Policy",desc:"Guidelines for acceptable use of DataDrone's systems, tools, and resources.",iframeSrc:"",link:"#"},
+  {id:"DOC-003",title:"Data Protection Policy",desc:"How DataDrone collects, processes, stores, and protects personal and client data.",iframeSrc:"",link:"#"},
+  {id:"DOC-004",title:"Incident Response Plan",desc:"Step-by-step procedures for identifying, reporting, and responding to security incidents.",iframeSrc:"",link:"#"},
+  {id:"DOC-005",title:"Remote Working Policy",desc:"Security requirements and best practices for DataDrone's remote workforce.",iframeSrc:"",link:"#"},
+  {id:"DOC-006",title:"Password Policy",desc:"Requirements for password creation, management, and multi-factor authentication.",iframeSrc:"",link:"#"},
+  {id:"DOC-007",title:"Data Classification Policy",desc:"Framework for classifying and handling data based on its sensitivity level.",iframeSrc:"",link:"#"},
+  {id:"DOC-008",title:"Vendor Management Policy",desc:"Security requirements for third-party vendors and service providers.",iframeSrc:"",link:"#"},
+  {id:"DOC-009",title:"Business Continuity Plan",desc:"Procedures to ensure DataDrone can continue operations during disruptions.",iframeSrc:"",link:"#"},
+  {id:"DOC-010",title:"Employee Privacy Notice",desc:"How DataDrone handles employee personal data and your rights regarding that data.",iframeSrc:"",link:"#"}
+];
+
+let currentUser=null, userCourseAccess=[], sectionReadState={}, currentCourseIndex=null;
+
+function handleLogin(){
+  const email=document.getElementById('loginEmail').value.trim().toLowerCase();
+  const err=document.getElementById('loginError');
+  if(!email){err.textContent='Please enter your email address.';return;}
+  if(!email.includes('@')){err.textContent='Please enter a valid email address.';return;}
+  const access=USER_ACCESS[email];
+  if(access===undefined){err.textContent='Access denied. This email is not registered. Contact your admin.';return;}
+  currentUser=email;
+  userCourseAccess=access==="ALL"?courses.map((_,i)=>i):[...access];
+  const saved=localStorage.getItem('lms_read_'+email);
+  if(saved){try{const p=JSON.parse(saved);sectionReadState={};for(const k in p)sectionReadState[k]=new Set(p[k]);}catch(e){sectionReadState={};}}else{sectionReadState={};}
+  document.getElementById('loginScreen').classList.add('hidden');
+  const ini=email.substring(0,2).toUpperCase();
+  document.getElementById('navAvatar').textContent=ini;
+  document.getElementById('navEmail').textContent=email;
+  document.getElementById('mobileEmail').textContent=email;
+  document.getElementById('statCourses').textContent=userCourseAccess.length;
+  renderCourses();observeElements();
+}
+
+function handleLogout(){
+  currentUser=null;userCourseAccess=[];sectionReadState={};currentCourseIndex=null;
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('loginEmail').value='';document.getElementById('loginError').textContent='';
+  navigate('home');
+}
+
+function saveReadState(){
+  if(!currentUser)return;
+  const s={};for(const k in sectionReadState)s[k]=[...sectionReadState[k]];
+  localStorage.setItem('lms_read_'+currentUser,JSON.stringify(s));
+}
+
+function navigate(page,courseIndex){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-center a').forEach(a=>a.classList.remove('active'));
+  if(page==='course-detail'&&courseIndex!==undefined){
+    document.getElementById('page-course-detail').classList.add('active');
+    currentCourseIndex=courseIndex;renderCourseDetail(courseIndex);
+    document.querySelector('[data-page="courses"]').classList.add('active');
+  }else{
+    document.getElementById('page-'+page).classList.add('active');
+    const n=document.querySelector(`[data-page="${page}"]`);if(n)n.classList.add('active');
+  }
+  window.scrollTo({top:0,behavior:'smooth'});closeMenu();
+}
+
+function toggleMenu(){document.getElementById('hamburger').classList.toggle('open');document.getElementById('navLinks').classList.toggle('open');}
+function closeMenu(){document.getElementById('hamburger').classList.remove('open');document.getElementById('navLinks').classList.remove('open');}
+
+function renderCourses(){
+  const grid=document.getElementById('coursesGrid');
+  if(!currentUser){grid.innerHTML='<p style="text-align:center;color:var(--gray-500);grid-column:1/-1;">Please sign in to view your assigned courses.</p>';return;}
+  const acc=userCourseAccess.map(i=>({c:courses[i],i}));
+  if(!acc.length){grid.innerHTML='<p style="text-align:center;color:var(--gray-500);grid-column:1/-1;">No courses assigned. Contact your admin.</p>';return;}
+  grid.innerHTML=acc.map(({c,i})=>{
+    const t=c.sections.length,r=sectionReadState[i]?sectionReadState[i].size:0,done=r>=t;
+    return `<div class="course-card fade-in" onclick="navigate('course-detail',${i})"><div class="course-card-header"><div class="course-id">${c.id}${done?' &#10003; Complete':''}</div><h3>${c.title}</h3></div><div class="course-card-body"><div class="course-meta"><div class="course-meta-item"><svg class="course-meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>${c.audience}</div><div class="course-meta-item"><svg class="course-meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${c.duration}</div></div><div class="course-meta"><div class="course-meta-item"><svg class="course-meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>${c.frequency}</div></div><div class="course-tags">${c.tags.map(t=>`<span class="course-tag">${t}</span>`).join('')}</div><button class="course-start-btn">${done?'Review Course':`Start Course (${r}/${t})`}</button></div></div>`;
+  }).join('');
+}
+
+function renderCourseDetail(index){
+  const c=courses[index],d=document.getElementById('courseDetail'),t=c.sections.length,rs=sectionReadState[index]||new Set(),rc=rs.size,all=rc>=t,pct=Math.round((rc/t)*100);
+  d.innerHTML=`<button class="course-back" onclick="navigate('courses')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back to Courses</button>
+  <div class="course-detail-header"><div class="course-detail-id">${c.id}</div><h1>${c.title}</h1>
+  <div class="course-detail-meta"><div class="course-detail-meta-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff1f1f" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> ${c.audience}</div><div class="course-detail-meta-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff1f1f" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${c.duration}</div><div class="course-detail-meta-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff1f1f" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg> ${c.frequency}</div><div class="course-detail-meta-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff1f1f" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> ${c.assessment}</div></div></div>
+  <div class="progress-bar-wrapper"><div class="progress-label"><span class="progress-label-text">Course Progress</span><span class="progress-label-count" id="progressCount">${rc} / ${t} sections read</span></div><div class="progress-track"><div class="progress-fill" id="progressFill" style="width:${pct}%"></div></div></div>
+  ${c.sections.map((s,si)=>{const ir=rs.has(si);return `<div class="course-section${si===0?' open':''}${ir?' read':''}" data-section-index="${si}" id="section-${si}"><div class="course-section-header" onclick="handleSectionToggle(this.parentElement,${index},${si})"><div class="section-number">${ir?'&#10003;':(si+1)}</div><h3>${s.title}</h3><span class="section-read-badge">Read</span><div class="section-toggle">&#9660;</div></div><div class="course-section-content"><div class="section-body">${s.content}</div></div></div>`;}).join('')}
+  <div class="quiz-section ${all?'unlocked':'locked'}" id="quizSection">
+  <div class="quiz-lock-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="${all?'#ff1f1f':'#666'}" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+  <h3>${all?'Assessment Unlocked':'Assessment Locked'}</h3>
+  <p class="quiz-desc">${all?(c.assessment.includes('80%')?'All sections completed. Score at least 80% to pass.':'All sections completed. Take the assessment.'):'Read all course sections to unlock the assessment quiz.'}</p>
+  <a href="${all?c.quizLink:'javascript:void(0)'}" ${all?'target="_blank"':''} class="quiz-link ${all?'enabled':'disabled'}">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${all?'<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>':'<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'}</svg>
+  ${all?'Take Quiz':'Complete All Sections First'}</a>
+  ${!all?`<div class="quiz-remaining" id="quizRemaining">${t-rc} section${t-rc!==1?'s':''} remaining</div>`:''}
+  </div>`;
+  if(!rs.has(0))markSectionRead(index,0);
+}
+
+function handleSectionToggle(el,ci,si){
+  if(event.target.closest('.course-section-content'))return;
+  const opening=!el.classList.contains('open');
+  el.classList.toggle('open');
+  if(opening)markSectionRead(ci,si);
+}
+
+function markSectionRead(ci,si){
+  if(!sectionReadState[ci])sectionReadState[ci]=new Set();
+  if(sectionReadState[ci].has(si))return;
+  sectionReadState[ci].add(si);saveReadState();
+  const el=document.getElementById('section-'+si);
+  if(el){el.classList.add('read');const n=el.querySelector('.section-number');if(n)n.innerHTML='&#10003;';}
+  const c=courses[ci],t=c.sections.length,rc=sectionReadState[ci].size,pct=Math.round((rc/t)*100);
+  const pf=document.getElementById('progressFill'),pc=document.getElementById('progressCount');
+  if(pf)pf.style.width=pct+'%';
+  if(pc)pc.textContent=rc+' / '+t+' sections read';
+  if(rc>=t){unlockQuiz(ci);}
+  else{const rm=document.getElementById('quizRemaining');if(rm){const l=t-rc;rm.textContent=l+' section'+(l!==1?'s':'')+' remaining';}}
+}
+
+function unlockQuiz(ci){
+  const c=courses[ci],qs=document.getElementById('quizSection');if(!qs)return;
+  qs.classList.remove('locked');qs.classList.add('unlocked');
+  qs.innerHTML=`<h3>Assessment Unlocked</h3><p class="quiz-desc">${c.assessment.includes('80%')?'All sections completed. Score at least 80% to pass.':'All sections completed. Take the assessment.'}</p><a href="${c.quizLink}" target="_blank" class="quiz-link enabled"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Take Quiz</a>`;
+}
+
+function renderDocuments(){
+  const grid=document.getElementById('docsGrid');
+  grid.innerHTML=documents.map(d=>`<div class="doc-card"><div class="doc-preview">${d.iframeSrc?`<iframe src="${d.iframeSrc}" title="${d.title}"></iframe>`:`<div class="doc-placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Document preview</span></div>`}<div class="doc-preview-overlay" onclick="window.open('${d.link}','_blank')"><div class="doc-preview-btn">Click to Open</div></div></div><div class="doc-info"><div class="doc-icon-row"><div class="doc-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff1f1f" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><h3>${d.title}</h3></div><p>${d.desc}</p><a href="${d.link}" target="_blank" class="doc-open-link">Open Document <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a></div></div>`).join('');
+}
+
+const observer=new IntersectionObserver(e=>{e.forEach(en=>{if(en.isIntersecting)en.target.classList.add('visible');});},{threshold:0.1});
+function observeElements(){document.querySelectorAll('.fade-in').forEach(el=>observer.observe(el));}
+window.addEventListener('scroll',()=>{document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>20);});
+
+renderDocuments();setTimeout(observeElements,100);
+</script>
+</body>
+</html>
